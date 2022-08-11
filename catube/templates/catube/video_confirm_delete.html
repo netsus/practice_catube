@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <p class="alert alert-danger">
+        영상 &lt;{{ video.title }}&gt;를 정말 삭제하시겠습니까?
+    </p>
+
+    <form action="" method="post" novalidate>
+        {% csrf_token %}
+        <input type="submit" value="Go!" class="btn btn-danger" />
+    </form>
+{% endblock %}

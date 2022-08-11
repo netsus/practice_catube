@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% load bootstrap5 catube_tags humanize %}
+
+{% block content %}
+    <video controls class="w-100">
+        <source src="{{ video.file.url }}" />
+    </video>
+
+    <div class="py-3">
+        <h4>{{ video.title }}</h4>
+        <div>조회수 {{ video.view_count|intcomma }}회</div>
+    </div>
+    <div>
+        {% is_liked_user video request.user as is_liked %}
+        {% if is_liked %}
+            <a href="{% url "catube:video_like" pk=video.pk action="dislike" %}" class="btn btn-outline-danger">
+                <span class="fa fa-heart text-danger"></span> 좋아요
+            </a>
+        {% else %}
+            <a href="{% url "catube:video_like" pk=video.pk action="like" %}" class="btn btn-outline-secondary">
+                <span class="fa fa-heart-o text-secondary"></span> 좋아요
+            </a>
+        {% endif %}
+
+        {% if user == video.author %}
+            <a href="{% url 'catube:video_edit' video.pk %}" class="btn btn-danger">수정</a>
+            <a href="{% url 'catube:video_delete' video.pk %}" class="btn btn-outline-danger">삭제</a>
+        {% endif %}
+    </div>
+
+    <hr />
+
+    <h5>{{ video.author.email|default:video.author.username }}</h5>
+    {{ video.description|linebreaks }}
+
+    <p>
+        {% for tag in video.tag_set.all %}
+            <span class="badge bg-primary">{{ tag.name }}</span>
+        {% endfor %}
+    </p>
+
+    <hr />
+
+    <p>댓글 ({{ video.comment_set.all.count }})</p>
+
+    <form action="{% url 'catube:comment_new' video.pk %}" method="post" novalidate>
+        {% csrf_token %}
+        {% bootstrap_form comment_form layout="inline" %}
+        <input type="submit" value="저장" class="btn btn-danger mt-2" />
+    </form>
+
+    <div class="comment-list">
+        {% for comment in video.comment_set.all %}
+            <div class="comment">
+                작성자: {{ comment.author }}, {{ comment.created_at|timesince }} 전,
+                {{ comment.content|linebreaks }}
+                {% if user == comment.author %}
+                    <a href="{% url 'catube:comment_delete' video.pk comment.pk %}" class="btn btn-outline-danger btn-sm">삭제</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
